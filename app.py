@@ -14,28 +14,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-
-def data_transfer():
-
-    with open('teachers.json', 'r') as f:
-        teachers_dict = loads(f.read())
-
-        teachers_list = []
-        for i, value in teachers_dict.items():
-            teachers_list.append(value)
-
-        for teacher in teachers_list:
-            t = Tutor(name=teacher['name'], about=teacher['about'], rating=teacher['rating'],
-                      picture=teacher['picture'], price=teacher['price'], goals=teacher['goals'], free=teacher['free'])
-
-            db.session.add(t)
-
-        db.session.commit()
-
-
-data_transfer()
-
-
 class Tutor(db.Model):
 
     __tablename__ = "tutor"
@@ -77,15 +55,21 @@ class Pick(db.Model):
     client = db.relationship("Tutor", back_populates="picks")
 
 
-with open('teachers.json', 'r') as f:
-    teachers_dict = loads(f.read())
+# with open('teachers.json', 'r') as f:
+#     teachers_dict = loads(f.read())
+#
+#     teachers_list = []
+#     for i, value in teachers_dict.items():
+#         teachers_list.append(value)
+#
+#     shuffle(teachers_list)
 
-    teachers_list = []
-    for i, value in teachers_dict.items():
-        teachers_list.append(value)
+tutors = db.session.query(Tutor).all()
+teachers_list = []
+for tutor in tutors:
+    teachers_list.append(tutor)
 
-    shuffle(teachers_list)
-
+shuffle(teachers_list)
 
 def time_table(id):
 
@@ -113,6 +97,27 @@ def time_table(id):
         time_table['22:00'].append(value['22:00'])
 
     return time_table
+
+
+def data_transfer():
+
+    with open('teachers.json', 'r') as f:
+        teachers_dict = loads(f.read())
+
+        teachers_list = []
+        for i, value in teachers_dict.items():
+            teachers_list.append(value)
+
+        for teacher in teachers_list:
+            t = Tutor(name=teacher['name'], about=teacher['about'], rating=teacher['rating'],
+                      picture=teacher['picture'], price=teacher['price'], goals=str(teacher['goals']), free=str(teacher['free']))
+
+            db.session.add(t)
+
+        db.session.commit()
+
+
+# data_transfer()
 
 
 def selection_teachers_by_goal(goal, teachers_list):
